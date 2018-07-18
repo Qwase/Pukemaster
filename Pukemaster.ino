@@ -92,8 +92,6 @@ double fourthRowVertialAlign = fourthRow + verticalAlign;
 
 
 
-
-
 void setup() {
   Serial.begin(9600);
   Serial.print("TFT size is "); Serial.print(tft.width()); Serial.print("x"); Serial.println(tft.height());
