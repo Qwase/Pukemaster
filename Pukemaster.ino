@@ -33,12 +33,9 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-#define REDBAR_MINX 80
-#define GREENBAR_MINX 130
-#define BLUEBAR_MINX 180
-#define BAR_MINY 30
-#define BAR_HEIGHT 250
-#define BAR_WIDTH 30
+#define Loading_MINX 180
+#define Loading_MINY 30
+
 
 #define MINPRESSURE 1
 #define MAXPRESSURE 1000
@@ -97,17 +94,12 @@ double fourthRowVertialAlign = fourthRow + verticalAlign;
 
 void setup() {
   Serial.begin(9600);
-  Serial.print("TFT size is "); Serial.print(tft.width()); Serial.print("x"); Serial.println(tft.height());
-  tft.reset();
-  Serial.begin(9600);
-  Serial.println(F("Paint!"));
   tft.reset();
   #ifdef USE_ADAFRUIT_SHIELD_PINOUT
   Serial.println(F("Using Adafruit 2.4\" TFT Arduino Shield Pinout"));
   #else
   Serial.println(F("Using Adafruit 2.4\" TFT Breakout Board Pinout"));
   #endif
-  Serial.print("TFT size is "); Serial.print(tft.width()); Serial.print("x"); Serial.println(tft.height());
   tft.reset();
   uint16_t identifier = tft.readID();
   identifier=0x9341;
@@ -128,7 +120,7 @@ void setup() {
   tft.print("Pukemaster");
   for (int i; i < 200; i++)
   {
-    tft.fillRect(BAR_MINY -10, BLUEBAR_MINX, i, 10, BLACK);
+    tft.fillRect(Loading_MINY -10, Loading_MINX, i, 10, BLACK);
     delay(0.000000000000000000000000000000000000000000000000009);
   }
   tft.fillScreen(LIGHTGREY);
@@ -154,6 +146,7 @@ retrieveTouch();
         tft.drawRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, LIGHTGREY);
         delay(90);
         currentpage = 1;
+        startGameMenu();
       }
       //Game Settings
       else if(X>0 && X<230 && Y<150 && Y>85){
@@ -180,10 +173,36 @@ retrieveTouch();
   //Start Screen
   if (currentpage == 1)
   {
- 
-    currentpage = 0;
-    drawHome();
+    retrieveTouch();
 
+      //Auf eingabe warten
+       if (Z > 5 && Z < 1000)
+       {  
+        // good for debuggin, prints out the x,y cordinates of the press
+        Serial.print("X = "); Serial.println(X);
+        Serial.print("Y = "); Serial.println(Y);
+      if (X>45 && X<185 && Y<150 && Y>85)
+      {
+        tft.fillRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, WHITE);
+        delay(70);
+        tft.fillRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, BLACK);
+        tft.drawRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, WHITE);
+        tft.setCursor(midColCursorX-32,187);
+        tft.setTextColor(WHITE);
+        tft.print("Stop");
+
+
+        
+        delay(70);
+        currentpage = 0;
+        drawHome();
+      }
+
+    
+       
+
+      
+  }
   }
    //Game Settings
     if (currentpage == 2)
@@ -207,6 +226,59 @@ retrieveTouch();
         currentpage = 0;
         drawHome();
       }
+            else if (X>5 && X<70 && Y<210 && Y>145) //Easy Button
+      {
+        tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
+        tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        //Disable Other
+        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      }
+            else if (X>80 && X<155 && Y<210 && Y>145) //Normal Button
+      {
+        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, YELLOW); 
+        tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        //Disable Other
+        tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      }
+            else if (X>170 && X<235 && Y<210 && Y>145) //Hard Button
+      {
+        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, RED);
+        tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        //Disable Other
+        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+
+      }
+            else if (X>5 && X<70 && Y<75 && Y>5) //Boost On Button
+      {
+          tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREEN);
+          tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+          //Disable Other
+          tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+          tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+      }
+            else if (X>165 && X<235 && Y<75 && Y>5) //Boost Off Button
+      {
+
+          tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREEN);
+          tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+          //Disable Other
+          tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+          tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+      }
+      
+
+
+
+      
     }
 
   }
@@ -315,9 +387,34 @@ void drawGameSettings()  //Draw Game Settings Menu
   tft.setTextSize(2);
   tft.print("Game Settings");
 
-  //
-  //Define Settings Here
-  //
+
+  tft.setCursor(80,50);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("Modus:");
+  tft.setCursor(20,70);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("Easy/Normal/Hard");
+
+    
+  // Erste Reihe
+  tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+  tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+  tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+  tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  
+  tft.setCursor(55,220);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("Boost ON/OFF?");
+  //Zweite Reihe
+  tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+  tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+  tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+  tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
 
 
   //Back Button
@@ -350,6 +447,42 @@ void drawLEDSettings()  //Draw LED Settings Menu
   tft.setTextColor(WHITE);
   tft.print("<-");
   delay(300);
+
+}
+
+
+void startGameMenu()  //Draw Start Display
+{
+  
+    tft.fillScreen(LIGHTGREY);
+    //Draw Headline
+    tft.setCursor(30,20);
+    tft.setTextColor(BLACK);
+    tft.setTextSize(3);
+    tft.print("Pukemaster     5000");
+    for (int i=10; i >= 0; i--)
+    {
+    tft.fillRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, RED);
+    tft.drawRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, WHITE);
+    tft.setCursor(midColCursorX,187);
+    tft.setTextSize(4);
+    tft.setTextColor(WHITE);
+    tft.print(i);
+    delay(1000);
+    } 
+
+
+
+  //
+  //Define Settings Here
+  //
+
+  //Stop Button
+  tft.fillRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, BLACK);
+  tft.drawRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, WHITE);
+  tft.setCursor(midColCursorX-32,187);
+  tft.setTextColor(WHITE);
+  tft.print("Stop");
 
 }
 
