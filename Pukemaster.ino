@@ -268,7 +268,7 @@ retrieveTouch();
             else if (X>165 && X<235 && Y<75 && Y>5) //Boost Off Button
       {
 
-          tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREEN);
+          tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, RED);
           tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
           //Disable Other
           tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
