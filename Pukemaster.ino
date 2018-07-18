@@ -55,6 +55,7 @@ int X, Y, Z;
 //Variable für die aktuelle Seite im Menü
 int currentpage;
 
+
 //Berechnungne für die Boxen
 //Screen height without hidden pixel
 double tHeight = tft.height() - 1;
@@ -92,72 +93,48 @@ double fourthRowVertialAlign = fourthRow + verticalAlign;
 
 
 
+
+
 void setup() {
   Serial.begin(9600);
   Serial.print("TFT size is "); Serial.print(tft.width()); Serial.print("x"); Serial.println(tft.height());
-
   tft.reset();
-Serial.begin(9600);
+  Serial.begin(9600);
   Serial.println(F("Paint!"));
-  
   tft.reset();
-
-#ifdef USE_ADAFRUIT_SHIELD_PINOUT
+  #ifdef USE_ADAFRUIT_SHIELD_PINOUT
   Serial.println(F("Using Adafruit 2.4\" TFT Arduino Shield Pinout"));
-#else
+  #else
   Serial.println(F("Using Adafruit 2.4\" TFT Breakout Board Pinout"));
-#endif
-
+  #endif
   Serial.print("TFT size is "); Serial.print(tft.width()); Serial.print("x"); Serial.println(tft.height());
-
   tft.reset();
-
   uint16_t identifier = tft.readID();
   identifier=0x9341;
   tft.begin(identifier);
-
   //Background color
   tft.fillScreen(LIGHTGREY);
-
-  // Draw Main Menu
+  //Display ausrichtung
   tft.setRotation(2);
- // createButtons();
-
-  
+  //Hauptansicht
   tft.fillScreen(LIGHTGREY);
-
-
-  currentpage = 0;
-
   tft.setTextSize(2);
   tft.setTextColor(BLACK);
   tft.setCursor(30, 140);
   tft.print("Loading...");
-
   tft.setTextSize(3);
   tft.setTextColor(BLACK);
   tft.setCursor(30, 70);
   tft.print("Pukemaster");
-
-
   for (int i; i < 200; i++)
   {
     tft.fillRect(BAR_MINY -10, BLUEBAR_MINX, i, 10, BLACK);
     delay(0.000000000000000000000000000000000000000000000000009);
   }
-
   tft.fillScreen(LIGHTGREY);
-
   drawHome();
   currentpage = 0;
-
-
-
-
   
-  
-
-
 }
 
 void loop(){
@@ -165,57 +142,98 @@ retrieveTouch();
   
   //Homescreen
   if (currentpage == 0){
-     //Auf eingabe warten
+  //Auf eingabe warten
   if (Z > 5 && Z < 1000)
   { 
     // good for debuggin, prints out the x,y cordinates of the press
-    tft.setTextSize(3);
     Serial.print("X = "); Serial.println(X);
     Serial.print("Y = "); Serial.println(Y);
     
      //Start angedrückt
-    if(X>0 && X<230 && Y<230 && Y>160){
-      tft.drawRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, WHITE);
-      delay(90);
-      currentpage = 1;
+      if(X>0 && X<230 && Y<230 && Y>160){
+        tft.drawRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, LIGHTGREY);
+        delay(90);
+        currentpage = 1;
       }
       //Game Settings
       else if(X>0 && X<230 && Y<150 && Y>85){
-      tft.drawRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, WHITE);
-
-      delay(90);
-      currentpage = 2;}
+        tft.drawRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, LIGHTGREY);
+        delay(90);
+        currentpage = 2;
+        X = 0;
+        Y = 0;
+        Z = 0;
+        drawGameSettings();
+      }
       //LED Settings
-      else if(X>0 && X<230 && Y<70 && Y>5){
-      tft.drawRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, WHITE);
-      delay(90);
-      currentpage = 3;}
-      
-    
+        else if(X>0 && X<230 && Y<70 && Y>5){
+        tft.drawRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, LIGHTGREY);
+        delay(90);
+        currentpage = 3;
+        X = 0;
+        Y = 0;
+        Z = 0;
+        drawLEDSettings();
+        } 
   }
   }
-  //Settings Screen
+  //Start Screen
   if (currentpage == 1)
   {
-    
+ 
     currentpage = 0;
     drawHome();
 
   }
-
+   //Game Settings
     if (currentpage == 2)
   {
-    
-    currentpage = 0;
-    drawHome();
+       retrieveTouch();
+       //Auf eingabe warten
+       if (Z > 5 && Z < 1000)
+       {  
+        // good for debuggin, prints out the x,y cordinates of the press
+        Serial.print("X = "); Serial.println(X);
+        Serial.print("Y = "); Serial.println(Y);
+      if (X>5 && X<40 && Y<305 && Y>275)
+      {
+        tft.fillRoundRect(padding,padding, 35, 30, 8, WHITE);
+        delay(70);
+        tft.fillRoundRect(padding,padding, 35, 30, 8, BLACK);
+        tft.drawRoundRect(padding,padding, 35, 30, 8, WHITE);
+        tft.setCursor(15, 18);
+        tft.print("<-");
+        delay(70);
+        currentpage = 0;
+        drawHome();
+      }
+    }
 
   }
 
+  //LED Settings
     if (currentpage == 3)
   {
-    
-    currentpage = 0;
-    drawHome();
+       retrieveTouch();
+       //Auf eingabe warten
+       if (Z > 5 && Z < 1000)
+       {  
+        // good for debuggin, prints out the x,y cordinates of the press
+        Serial.print("X = "); Serial.println(X);
+        Serial.print("Y = "); Serial.println(Y);
+      if (X>5 && X<40 && Y<305 && Y>275)
+      {
+        tft.fillRoundRect(padding,padding, 35, 30, 8, WHITE);
+        delay(70);
+        tft.fillRoundRect(padding,padding, 35, 30, 8, BLACK);
+        tft.drawRoundRect(padding,padding, 35, 30, 8, WHITE);
+        tft.setCursor(15, 18);
+        tft.print("<-");
+        delay(70);
+        currentpage = 0;
+        drawHome();
+      }
+    }
 
   }
 
@@ -256,57 +274,84 @@ void retrieveTouch()
 }
 
 void drawHome() {
-  //(initial x,initial y,width,height,color)
-  double secondRowVertialAlign = secondRow + verticalAlign;
-  double thirdRowVertialAlign = thirdRow + verticalAlign;
-  double fourthRowVertialAlign = fourthRow + verticalAlign;
-
-  /***Draw filled squares with specified dimensions and position***/
-  //First Row
+  tft.fillScreen(LIGHTGREY);
+  //Draw Headline
   tft.setCursor(30,20);
   tft.setTextColor(BLACK);
   tft.setTextSize(3);
   tft.print("Pukemaster     5000");
 
-  //Second Row 
+  //Draw Start Button
   tft.fillRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding *2), BOXSIZE, GREY);
-  //Third Row
-  tft.fillRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding *2), BOXSIZE, GREY);
-  //Fourth Row
-  tft.fillRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding *2), BOXSIZE, GREY);
-
-  /***Draw Borders around squares***/
-
-  //Start Button
   tft.drawRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, BLACK);
-  //Settings Button
-  tft.drawRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, BLACK);
-  //Exit Button
-  tft.drawRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, BLACK);
-
-
-
-
   tft.setTextSize(2);
   tft.setTextColor(BLACK);
-
-
   tft.setCursor(firstRowCursorY, secondRowCursorY);
   tft.println("Start");
 
-
+  //Draw Game Settings Button
+  tft.fillRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding *2), BOXSIZE, GREY);
+  tft.drawRect(leftColPositionX, thirdRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, BLACK);
+  tft.setTextSize(2);
+  tft.setTextColor(BLACK);
   tft.setCursor(firstRowCursorY, thirdRowCursorY);
   tft.println("Game Settings");
-
-
-  tft.setCursor(firstRowCursorY, fourthRowCursorY);
-  tft.println("LED Settings");
-
-
-
   
+  //Draw LED Settings
+  tft.fillRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding *2), BOXSIZE, GREY);
+  tft.drawRect(leftColPositionX, fourthRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, BLACK);
+  tft.setTextSize(2);
+  tft.setTextColor(BLACK);
+  tft.setCursor(firstRowCursorY, fourthRowCursorY);
+  tft.println("LED Settings"); 
+
 }
 
+void drawGameSettings()  //Draw Game Settings Menu
+{
+  tft.fillScreen(LIGHTGREY);
+  tft.setCursor(55,20);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("Game Settings");
+
+  //
+  //Define Settings Here
+  //
+
+
+  //Back Button
+  tft.fillRoundRect(padding,padding, 35, 30, 8, BLACK);
+  tft.drawRoundRect(padding,padding, 35, 30, 8, WHITE);
+  tft.setCursor(15, 18);
+  tft.setTextColor(WHITE);
+  tft.print("<-");
+  delay(300);
+
+}
+
+void drawLEDSettings()  //Draw LED Settings Menu
+{
+  tft.fillScreen(LIGHTGREY);
+  tft.setCursor(55,20);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("LED Settings");
+
+  //
+  //Define Settings Here
+  //
+
+
+  //Back Button
+  tft.fillRoundRect(padding,padding, 35, 30, 8, BLACK);
+  tft.drawRoundRect(padding,padding, 35, 30, 8, WHITE);
+  tft.setCursor(15, 18);
+  tft.setTextColor(WHITE);
+  tft.print("<-");
+  delay(300);
+
+}
 
 
 
