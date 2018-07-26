@@ -51,6 +51,16 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 int X, Y, Z;
 //Variable für die aktuelle Seite im Menü
 int currentpage;
+int gamemode = 3;
+boolean buttonactive = true;
+int links = 44; //Motorsteuerung Pin 1
+int rechts = 46; //Motorsteuerung Pin 2
+int mintempo = 60; //Minimales Tempo
+int maxtempo = 100; //Maximales Tempo
+long randNumber; //Random Nummer für hard Mode
+long roundCounter = 0; //RundenZähler für Random Mode
+
+
 
 
 //Berechnungne für die Boxen
@@ -94,6 +104,10 @@ double fourthRowVertialAlign = fourthRow + verticalAlign;
 
 void setup() {
   Serial.begin(9600);
+  pinMode(links, OUTPUT);
+  pinMode(rechts, OUTPUT);  
+  analogWrite(links, 0);  
+  analogWrite(rechts, 0); 
   tft.reset();
   #ifdef USE_ADAFRUIT_SHIELD_PINOUT
   Serial.println(F("Using Adafruit 2.4\" TFT Arduino Shield Pinout"));
@@ -121,11 +135,13 @@ void setup() {
   for (int i; i < 200; i++)
   {
     tft.fillRect(Loading_MINY -10, Loading_MINX, i, 10, BLACK);
-    delay(0.000000000000000000000000000000000000000000000000009);
+    delay(1);
   }
   tft.fillScreen(LIGHTGREY);
   drawHome();
   currentpage = 0;
+
+  randomSeed(analogRead(6));
   
 }
 
@@ -146,7 +162,22 @@ retrieveTouch();
         tft.drawRect(leftColPositionX, secondRowVertialAlign, (BOXSIZE * 3) + (padding * 2), BOXSIZE, LIGHTGREY);
         delay(90);
         currentpage = 1;
-        startGameMenu();
+        drawGameMenu();
+           if(gamemode == 1) //Easy Slow Forward
+           {
+            easy();
+
+            }
+            else if (gamemode == 2) //Normal Faster Forward
+            {
+    
+             normal();
+
+            }
+            else if (gamemode == 3) //Hard Faster Random
+            {
+            hard();       
+            }
       }
       //Game Settings
       else if(X>0 && X<230 && Y<150 && Y>85){
@@ -173,6 +204,7 @@ retrieveTouch();
   //Start Screen
   if (currentpage == 1)
   {
+    
     retrieveTouch();
 
       //Auf eingabe warten
@@ -195,13 +227,37 @@ retrieveTouch();
         
         delay(70);
         currentpage = 0;
+        analogWrite(links, 0);  
+        analogWrite(rechts, 0); 
         drawHome();
       }
-
-    
-       
-
       
+  }
+  else
+  {
+    if(gamemode == 1) //Easy Slow Forward
+           {
+            easy();
+
+            }
+            else if (gamemode == 2) //Normal Faster Forward
+            {
+    
+             normal();
+
+            }
+            else if (gamemode == 3) //Hard Faster Random
+            {
+              if(roundCounter < 3500)
+              {
+                roundCounter = roundCounter + 1;
+              }
+              else
+              {
+                hard();  
+                roundCounter = 0;
+              }
+            }
   }
   }
    //Game Settings
@@ -226,7 +282,7 @@ retrieveTouch();
         currentpage = 0;
         drawHome();
       }
-            else if (X>5 && X<70 && Y<210 && Y>145) //Easy Button
+            else if (X>5 && X<70 && Y<210 && Y>145) //Easy Button (Gamemode 1)
       {
         tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
         tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
@@ -235,26 +291,29 @@ retrieveTouch();
         tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
         tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
         tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        gamemode = 1;
       }
-            else if (X>80 && X<155 && Y<210 && Y>145) //Normal Button
+            else if (X>80 && X<155 && Y<210 && Y>145) //Normal Button (Gamemode 2)
       {
-        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, YELLOW); 
+        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN); 
         tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
         //Disable Other
         tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
         tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
         tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
         tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        gamemode = 2;
       }
-            else if (X>170 && X<235 && Y<210 && Y>145) //Hard Button
+            else if (X>170 && X<235 && Y<210 && Y>145) //Hard Button (Gamemode 3)
       {
-        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, RED);
+        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
         tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
         //Disable Other
         tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
         tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
         tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
         tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        gamemode = 3;
 
       }
             else if (X>5 && X<70 && Y<75 && Y>5) //Boost On Button
@@ -264,6 +323,8 @@ retrieveTouch();
           //Disable Other
           tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
           tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+          buttonactive = true;
+          
       }
             else if (X>165 && X<235 && Y<75 && Y>5) //Boost Off Button
       {
@@ -273,6 +334,7 @@ retrieveTouch();
           //Disable Other
           tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
           tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+          buttonactive = false;
       }
       
 
@@ -396,25 +458,61 @@ void drawGameSettings()  //Draw Game Settings Menu
   tft.setTextColor(BLACK);
   tft.setTextSize(2);
   tft.print("Easy/Normal/Hard");
-
-    
-  // Erste Reihe
+//Gamemode 1= Easy pre select Gamemode 2 = Normal pre select Gamemode 3 = Hard pre select
+  if(gamemode==1){
+      tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
+      tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+      tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+      tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+    }
+  else if (gamemode==2){
+      tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+      tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
+      tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+      tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+      tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  }  
+  else if (gamemode==3){
+        tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
+        tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREEN);
+        tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+        tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  }
+  /* Erste Reihe
   tft.fillRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
   tft.fillRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
   tft.fillRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, GREY);
   tft.drawRect(leftColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
   tft.drawRect(midColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
   tft.drawRect(rightColPositionX, secondRowVertialAlign+20, BOXSIZE, BOXSIZE, BLACK);
+  */
+
   
   tft.setCursor(55,220);
   tft.setTextColor(BLACK);
   tft.setTextSize(2);
   tft.print("Boost ON/OFF?");
-  //Zweite Reihe
-  tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
-  tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
-  tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
-  tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+
+
+  if (buttonactive == true){
+    tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREEN);
+    tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+    tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+    tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+
+  }else if (buttonactive == false){
+    tft.fillRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, GREY);
+    tft.fillRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, RED);
+    tft.drawRect(leftColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+    tft.drawRect(rightColPositionX, fourthRowVertialAlign, BOXSIZE, BOXSIZE, BLACK);
+
+  }
+
 
 
   //Back Button
@@ -451,7 +549,7 @@ void drawLEDSettings()  //Draw LED Settings Menu
 }
 
 
-void startGameMenu()  //Draw Start Display
+void drawGameMenu()  //Draw Start Display
 {
   
     tft.fillScreen(LIGHTGREY);
@@ -460,7 +558,7 @@ void startGameMenu()  //Draw Start Display
     tft.setTextColor(BLACK);
     tft.setTextSize(3);
     tft.print("Pukemaster     5000");
-    for (int i=10; i >= 0; i--)
+    for (int i=3; i >= 0; i--)
     {
     tft.fillRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, RED);
     tft.drawRoundRect(midColPositionX-35,thirdRowVertialAlign, BOXSIZE*2, BOXSIZE, 8, WHITE);
@@ -485,6 +583,60 @@ void startGameMenu()  //Draw Start Display
   tft.print("Stop");
 
 }
+
+
+   void easy()
+   {
+
+     analogWrite(links, 0);  
+     analogWrite(rechts, mintempo);
+
+   }
+
+   void normal()
+   {
+     analogWrite(links, 0);  
+     analogWrite(rechts, maxtempo);
+
+   }
+   void hard()
+   {
+
+       randNumber = random(0, 6);
+       if(randNumber == 0)
+       {
+        analogWrite(links, 0);  
+       analogWrite(rechts, mintempo);
+       }
+       else if(randNumber == 1)
+       {
+        analogWrite(links, 0);  
+       analogWrite(rechts, mintempo + 10);
+       }
+       else if(randNumber == 2)
+       {
+        analogWrite(links, 0);  
+       analogWrite(rechts, mintempo + 20);
+       }
+       else if(randNumber == 3)
+       {
+        analogWrite(links, 0);  
+       analogWrite(rechts, mintempo + 30);
+       }
+       else if(randNumber == 4)
+       {
+        analogWrite(links, 0);  
+       analogWrite(rechts, maxtempo);
+       }
+       else if(randNumber == 5)
+       {
+        analogWrite(rechts, 0);
+        analogWrite(links, mintempo);
+       }
+
+   }
+   
+
 
 
 
